@@ -210,9 +210,6 @@ SASL_PLAINTEXT
 {{- end -}}
 {{- end -}}
 
-
-
-
 {{/*
 Return listeners
 Usage:
@@ -227,12 +224,11 @@ Usage:
 {{- else -}}
 {{- $listeners = printf "%s%v,%s%v" "INTERNAL://:" .Values.service.ports.internal "CLIENT://:" .Values.service.ports.client }}
 {{- end -}}
-{{- if not (empty .Values.additionalListeners) -}}
-{{- $listeners = printf "%s,%s://:%v" $listeners .Values.additionalListeners .Values.additionalListenersPort -}}
+{{- if .Values.additionalListeners.enable -}}
+{{- $listeners = printf "%s,%s://:%v" $listeners .Values.additionalListeners.listener .Values.additionalListeners.port -}}
 {{- end -}}
 {{- printf "%s" $listeners -}}
 {{- end -}}
-
 
 {{/*
 Return listeners
@@ -253,8 +249,9 @@ Usage:
 {{- $protocolMap = printf "%s%s,%s%s" "INTERNAL:" $interBrokerProtocol "CLIENT:" $clientProtocol -}}
 {{- end -}}
 {{- end -}}
-{{- if not (empty .Values.additionalListenersProtocolMap) -}}
-{{- $protocolMap = printf "%s,%s" $protocolMap .Values.additionalListenersProtocolMap  -}}
+{{- if .Values.additionalListeners.enable -}}
+{{- $additionalListenerProtocol := include "kafka.listenerType" (dict "protocol" .Values.additionalListeners.protocol) -}}
+{{- $protocolMap = printf "%s,%s:%s" $protocolMap .Values.additionalListeners.listener $additionalListenerProtocol -}}
 {{- end -}}
 {{- printf "%s" $protocolMap -}}
 {{- end -}}

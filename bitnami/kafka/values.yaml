@@ -352,9 +352,15 @@ auth:
 ##  PCO @param additionalListeners
 ## 
 ##
-additionalListeners: "EXTERNAL-PLAIN"
-additionalListenersPort: 9095
-additionalListenersProtocolMap: "EXTERNAL-PLAIN:PLAINTEXT" 
+additionalListeners: 
+  enable: true 
+  listener: "EXTERNAL-PLAIN"
+  port: 9095
+  protocol: "plaintext"
+  service:
+    #must be the same as additionalListeners.port
+    externalPort: 9095
+    nodePorts: [31001,31002]
 
 ## @param listeners The address(es) the socket server listens on. Auto-calculated it's set to an empty array
 ## When it's set to an empty array, the listeners will be configured
