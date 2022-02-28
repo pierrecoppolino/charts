@@ -231,7 +231,7 @@ auth:
   clientProtocol: sasl_tls
   # Note: empty by default for backwards compatibility reasons, find more information at
   # https://github.com/bitnami/charts/pull/8902/
-  externalClientProtocol: plaintext
+  externalClientProtocol: sasl_tls
   interBrokerProtocol: plaintext
   ## SASL configuration
   ##
@@ -348,6 +348,12 @@ auth:
     ## @param auth.tls.keystorePasswordFromSecret secret key that containt the trustore keystore
     trustorePasswordFromSecret: trustore-password
 
+
+##  PCO @param additionalListeners
+## 
+##
+additionalListeners: "EXTERNAL-PLAIN://:9095"
+additionalListenersProtocolMap: "EXTERNAL-PLAIN:PLAINTEXT" 
 
 ## @param listeners The address(es) the socket server listens on. Auto-calculated it's set to an empty array
 ## When it's set to an empty array, the listeners will be configured
@@ -697,7 +703,7 @@ externalAccess:
   autoDiscovery:
     ## @param externalAccess.autoDiscovery.enabled Enable using an init container to auto-detect external IPs/ports by querying the K8s API
     ##
-    enabled: false
+    enabled: true
     ## Bitnami Kubectl image
     ## ref: https://hub.docker.com/r/bitnami/kubectl/tags/
     ## @param externalAccess.autoDiscovery.image.registry Init container auto-discovery image registry
@@ -781,7 +787,7 @@ externalAccess:
     useHostIPs: false
     ## @param externalAccess.service.usePodIPs using the MY_POD_IP address for external access.
     ##
-    usePodIPs: false
+    usePodIPs: true
     ## @param externalAccess.service.domain Domain or external ip used to configure Kafka external listener when service type is NodePort
     ## If not specified, the container will try to get the kubernetes node external IP
     ##
@@ -990,7 +996,7 @@ rbac:
   ## binding Kafka ServiceAccount to a role
   ## that allows Kafka pods querying the K8s API
   ##
-  create: false
+  create: true
 
 ## @section Metrics parameters
 

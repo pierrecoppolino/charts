@@ -196,7 +196,7 @@ Return true if encryption via TLS should be configured
 {{/*
 Return the type of listener
 Usage:
-{{ include "kafka.listenerType" ( dict "protocol" .Values.path.to.the.Value ) }}
+{{ include "kafka.listenerType" }}
 */}}
 {{- define "kafka.listenerType" -}}
 {{- if eq .protocol "plaintext" -}}
@@ -208,6 +208,29 @@ SASL_SSL
 {{- else if eq .protocol "sasl" -}}
 SASL_PLAINTEXT
 {{- end -}}
+{{- end -}}
+
+
+
+
+{{/*
+Return listeners
+Usage:
+{{ include "kafka.computeListeners" }}
+*/}}
+{{- define "kafka.computeListeners" -}}
+{{ $listeners := ""}}
+{{- if not (empty .Values.listeners)  -}}
+{{- $listeners = join "," .Values.listeners -}}
+{{- else if .Values.externalAccess.enabled -}}
+{{- $listeners = printf "%s%v,%s%v,%s%v" "INTERNAL://:" .Values.service.ports.internal "CLIENT://:" .Values.service.ports.client "EXTERNAL://:" .Values.service.ports.external }}
+{{- else -}}
+{{- $listeners = printf "%s%v,%s%v" "INTERNAL://:" .Values.service.ports.internal "CLIENT://:" .Values.service.ports.client }}
+{{- end -}}
+{{- if not (empty .Values.additionalListeners) -}}
+{{- $listeners = printf "%s,%s" $listeners .Values.additionalListeners -}}
+{{- end -}}
+{{- printf "%s" $listeners -}}
 {{- end -}}
 
 {{/*
