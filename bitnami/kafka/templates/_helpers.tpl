@@ -233,6 +233,32 @@ Usage:
 {{- printf "%s" $listeners -}}
 {{- end -}}
 
+
+{{/*
+Return listeners
+Usage:
+{{ include "kafka.computeProtocolMap" }}
+*/}}
+{{- define "kafka.computeProtocolMap" -}}
+{{ $protocolMap := "test" }}
+{{- if not (empty .Values.advertisedListeners)  -}}
+{{- $protocolMap = .Values.advertisedListeners | quote -}}
+{{- else -}}
+{{- $interBrokerProtocol := include "kafka.listenerType" (dict "protocol" .Values.auth.interBrokerProtocol) -}}
+{{- $clientProtocol := include "kafka.listenerType" (dict "protocol" .Values.auth.clientProtocol) -}}
+{{- if .Values.externalAccess.enabled -}}
+{{- $externalClientProtocol := include "kafka.listenerType" (dict "protocol" (include "kafka.externalClientProtocol" . )) -}}
+{{- $protocolMap = printf "%s%s,%s%s,%s%s" "INTERNAL:" $interBrokerProtocol "CLIENT:" $clientProtocol "EXTERNAL:" $externalClientProtocol -}}
+{{- else -}}
+{{- $protocolMap = printf "%s%s,%s%s" "INTERNAL:" $interBrokerProtocol "CLIENT:" $clientProtocol -}}
+{{- end -}}
+{{- end -}}
+{{- if not (empty .Values.additionalListenersProtocolMap) -}}
+{{- $protocolMap = printf "%s,%s" $protocolMap .Values.additionalListenersProtocolMap  -}}
+{{- end -}}
+{{- printf "%s" $protocolMap -}}
+{{- end -}}
+
 {{/*
 Return the Kafka JAAS credentials secret
 */}}
