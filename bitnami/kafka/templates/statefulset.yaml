@@ -276,6 +276,18 @@ spec:
               {{- else }}
               value: {{ default "" .Values.auth.tls.password | quote }}
               {{- end }}
+              {{- if .Values.auth.tls.storeSecret }}
+            - name: KAFKA_CFG_SSL_KEYSTORE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.auth.tls.storeSecret | quote }}
+                  key: {{ .Values.auth.tls.keystorePasswordFromSecret | quote }}
+            - name: KAFKA_CFG_SSL_TRUSTSTORE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.auth.tls.storeSecret | quote }}
+                  key: {{ .Values.auth.tls.trustorePasswordFromSecret | quote }}
+              {{- end }}
             {{- end }}
             {{- if .Values.metrics.jmx.enabled }}
             - name: JMX_PORT

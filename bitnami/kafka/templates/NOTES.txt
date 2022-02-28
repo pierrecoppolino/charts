@@ -31,7 +31,7 @@ In order to replicate the container startup scripts execute this command:
 {{- $saslMechanisms := .Values.auth.sasl.mechanisms -}}
 {{- $tlsEndpointIdentificationAlgorithm := default "" .Values.auth.tls.endpointIdentificationAlgorithm -}}
 {{- $tlsPasswordSecret := printf "$(kubectl get secret %s --namespace %s -o jsonpath='{.data.password}' | base64 --decode | cut -d , -f 1)" .Values.auth.tls.existingSecret $releaseNamespace -}}
-{{- $tlsPassword :=  ternary .Values.auth.tls.password $tlsPasswordSecret (eq .Values.auth.tls.existingSecret "") -}}
+{{/*{{- $tlsPassword :=  ternary .Values.auth.tls.password $tlsPasswordSecret (eq .Values.auth.tls.existingSecret "") -}}*/}}
 {{- $servicePort := int .Values.service.ports.client -}}
 
 {{- if and (or (eq .Values.service.type "LoadBalancer") .Values.externalAccess.enabled) (eq $externalClientProtocol "PLAINTEXT") }}
@@ -91,9 +91,9 @@ sasl.mechanism=PLAIN
 ssl.truststore.type={{ upper .Values.auth.tls.type }}
     {{- if eq .Values.auth.tls.type "jks" }}
 ssl.truststore.location=/tmp/kafka.truststore.jks
-        {{- if not (empty $tlsPassword) }}
-ssl.truststore.password={{ $tlsPassword }}
-        {{- end }}
+{{/*        {{- if not (empty $tlsPassword) }}*/}}
+{{/*ssl.truststore.password={{ $tlsPassword }}*/}}
+{{/*        {{- end }}*/}}
     {{- else if eq .Values.auth.tls.type "pem" }}
 ssl.truststore.certificates=-----BEGIN CERTIFICATE----- \
 ... \
@@ -112,9 +112,9 @@ security.protocol={{ $clientProtocol }}
 ssl.truststore.type={{ upper .Values.auth.tls.type }}
 {{- if eq .Values.auth.tls.type "jks" }}
 ssl.truststore.location=/tmp/kafka.truststore.{{ .Values.auth.tls.type }}
-    {{- if not (empty $tlsPassword) }}
-ssl.truststore.password={{ $tlsPassword }}
-    {{- end }}
+{{/*    {{- if not (empty $tlsPassword) }}*/}}
+{{/*ssl.truststore.password={{ $tlsPassword }}*/}}
+{{/*    {{- end }}*/}}
 {{- else if eq .Values.auth.tls.type "pem" }}
 ssl.truststore.certificates=-----BEGIN CERTIFICATE----- \
 ... \
@@ -124,9 +124,9 @@ ssl.truststore.certificates=-----BEGIN CERTIFICATE----- \
 ssl.keystore.type={{ upper .Values.auth.tls.type }}
     {{- if eq .Values.auth.tls.type "jks" }}
 ssl.keystore.location=/tmp/client.keystore.jks
-        {{- if not (empty $tlsPassword) }}
-ssl.keystore.password={{ $tlsPassword }}
-        {{- end }}
+{{/*        {{- if not (empty $tlsPassword) }}*/}}
+{{/*ssl.keystore.password={{ $tlsPassword }}*/}}
+{{/*        {{- end }}*/}}
     {{- else if eq .Values.auth.tls.type "pem" }}
 ssl.keystore.certificate.chain=-----BEGIN CERTIFICATE----- \
 ... \
@@ -246,9 +246,9 @@ sasl.mechanism=PLAIN
 ssl.truststore.type={{ upper .Values.auth.tls.type }}
     {{- if eq .Values.auth.tls.type "jks" }}
 ssl.truststore.location=/tmp/kafka.truststore.jks
-        {{- if not (empty $tlsPassword) }}
-ssl.truststore.password={{ $tlsPassword }}
-        {{- end }}
+{{/*        {{- if not (empty $tlsPassword) }}*/}}
+{{/*ssl.truststore.password={{ $tlsPassword }}*/}}
+{{/*        {{- end }}*/}}
     {{- else if eq .Values.auth.tls.type "pem" }}
 ssl.truststore.certificates=-----BEGIN CERTIFICATE----- \
 ... \
@@ -267,9 +267,9 @@ security.protocol={{ $externalClientProtocol }}
 ssl.truststore.type={{ upper .Values.auth.tls.type }}
 {{- if eq .Values.auth.tls.type "jks" }}
 ssl.truststore.location=/tmp/kafka.truststore.{{ .Values.auth.tls.type }}
-    {{- if not (empty $tlsPassword) }}
-ssl.truststore.password={{ $tlsPassword }}
-    {{- end }}
+{{/*    {{- if not (empty $tlsPassword) }}*/}}
+{{/*ssl.truststore.password={{ $tlsPassword }}*/}}
+{{/*    {{- end }}*/}}
 {{- else if eq .Values.auth.tls.type "pem" }}
 ssl.truststore.certificates=-----BEGIN CERTIFICATE----- \
 ... \
@@ -279,9 +279,9 @@ ssl.truststore.certificates=-----BEGIN CERTIFICATE----- \
 ssl.keystore.type={{ upper .Values.auth.tls.type }}
     {{- if eq .Values.auth.tls.type "jks" }}
 ssl.keystore.location=/tmp/client.keystore.jks
-        {{- if not (empty $tlsPassword) }}
-ssl.keystore.password={{ $tlsPassword }}
-        {{- end }}
+{{/*        {{- if not (empty $tlsPassword) }}*/}}
+{{/*ssl.keystore.password={{ $tlsPassword }}*/}}
+{{/*        {{- end }}*/}}
     {{- else if eq .Values.auth.tls.type "pem" }}
 ssl.keystore.certificate.chain=-----BEGIN CERTIFICATE----- \
 ... \
