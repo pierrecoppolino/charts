@@ -228,7 +228,7 @@ Usage:
 {{- $listeners = printf "%s%v,%s%v" "INTERNAL://:" .Values.service.ports.internal "CLIENT://:" .Values.service.ports.client }}
 {{- end -}}
 {{- if not (empty .Values.additionalListeners) -}}
-{{- $listeners = printf "%s,%s" $listeners .Values.additionalListeners -}}
+{{- $listeners = printf "%s,%s://:%v" $listeners .Values.additionalListeners .Values.additionalListenersPort -}}
 {{- end -}}
 {{- printf "%s" $listeners -}}
 {{- end -}}

@@ -352,7 +352,8 @@ auth:
 ##  PCO @param additionalListeners
 ## 
 ##
-additionalListeners: "EXTERNAL-PLAIN://:9095"
+additionalListeners: "EXTERNAL-PLAIN"
+additionalListenersPort: 9095
 additionalListenersProtocolMap: "EXTERNAL-PLAIN:PLAINTEXT" 
 
 ## @param listeners The address(es) the socket server listens on. Auto-calculated it's set to an empty array
