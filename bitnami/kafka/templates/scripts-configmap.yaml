@@ -24,7 +24,7 @@ data:
     #!/bin/bash
 
     SVC_NAME="${MY_POD_NAME}-external"
-
+    SVC_NAME_EXTERNAL_PLAIN="${MY_POD_NAME}-external-plain"
     {{- if eq .Values.externalAccess.service.type "LoadBalancer" }}
     # Auxiliary functions
     retry_while() {
@@ -70,8 +70,9 @@ data:
         echo "$node_port"
     }
     k8s_svc_node_port "{{ $releaseNamespace }}" "$SVC_NAME" | tee "$SHARED_FILE"
+    k8s_svc_node_port "{{ $releaseNamespace }}" "$SVC_NAME_EXTERNAL_PLAIN" | tee "$SHARED_FILE_PLAIN"
     {{- end }}
-  {{- end }}
+    {{- end }}
   setup.sh: |-
     #!/bin/bash
 
@@ -81,7 +82,6 @@ data:
     else
         export KAFKA_CFG_BROKER_ID="$((ID + {{ .Values.minBrokerId }}))"
     fi
-
     {{- if .Values.externalAccess.enabled }}
     # Configure external ip and port
     {{- if eq .Values.externalAccess.service.type "LoadBalancer" }}
@@ -111,7 +111,11 @@ data:
     # Configure Kafka advertised listeners
     {{- if .Values.advertisedListeners }}
     export KAFKA_CFG_ADVERTISED_LISTENERS={{ join "," .Values.advertisedListeners }}
-    {{- else }}
+    {{- else if .Values.additionalListeners.enable }}
+    export EXTERNAL_PLAIN_ACCESS_PORT="$(<${SHARED_FILE_PLAIN})"
+    export EXTERNAL_PLAIN_ACCESS_HOST="${HOST_IP}"
+    export KAFKA_CFG_ADVERTISED_LISTENERS="INTERNAL://${MY_POD_NAME}.{{ $fullname }}-headless.{{ $releaseNamespace }}.svc.{{ $clusterDomain }}:{{ $interBrokerPort }},CLIENT://${MY_POD_NAME}.{{ $fullname }}-headless.{{ $releaseNamespace }}.svc.{{ $clusterDomain }}:{{ $clientPort }},EXTERNAL://${EXTERNAL_ACCESS_HOST}:${EXTERNAL_ACCESS_PORT},EXTERNAL-PLAIN://${EXTERNAL_PLAIN_ACCESS_HOST}:${EXTERNAL_PLAIN_ACCESS_PORT}"
+    {{- else}}
     export KAFKA_CFG_ADVERTISED_LISTENERS="INTERNAL://${MY_POD_NAME}.{{ $fullname }}-headless.{{ $releaseNamespace }}.svc.{{ $clusterDomain }}:{{ $interBrokerPort }},CLIENT://${MY_POD_NAME}.{{ $fullname }}-headless.{{ $releaseNamespace }}.svc.{{ $clusterDomain }}:{{ $clientPort }},EXTERNAL://${EXTERNAL_ACCESS_HOST}:${EXTERNAL_ACCESS_PORT}"
     {{- end }}
     {{- end }}

@@ -134,6 +134,8 @@ spec:
                   fieldPath: metadata.name
             - name: SHARED_FILE
               value: "/shared/info.txt"
+            - name: SHARED_FILE_PLAIN
+              value: "/shared/unsecure-info.txt"
           {{- if .Values.externalAccess.autoDiscovery.resources }}
           resources: {{- toYaml .Values.externalAccess.autoDiscovery.resources | nindent 12 }}
           {{- end }}
@@ -214,6 +216,10 @@ spec:
             {{- if .Values.externalAccess.autoDiscovery.enabled }}
             - name: SHARED_FILE
               value: "/shared/info.txt"
+            {{- end }}
+            {{- if .Values.additionalListeners.enable }}
+            - name: SHARED_FILE_PLAIN
+              value: "/shared/unsecure-info.txt"
             {{- end }}
             {{- if eq .Values.externalAccess.service.type "NodePort" }}
             - name: HOST_IP
