@@ -48,7 +48,7 @@ spec:
       {{- else }}
       nodePort: null
       {{- end }}
-      targetPort: kafka-external
+      targetPort: {{ $root.Values.additionalListeners.service.externalPortName  }}
     {{- if $root.Values.externalAccess.service.extraPorts }}
     {{- include "common.tplvalues.render" (dict "value" $root.Values.externalAccess.service.extraPorts "context" $) | nindent 4 }}
     {{- end }}

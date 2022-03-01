@@ -51,6 +51,15 @@ spec:
       nodePort: {{ .Values.service.nodePorts.external }}
       {{- end }}
     {{- end }}
+    {{- if and .Values.additionalListeners.enable (or (eq .Values.service.type "NodePort") (eq .Values.service.type "LoadBalancer")) }}
+    - name: tcp-external-plain
+      port: {{ .Values.additionalListeners.service.externalPort }}
+      protocol: TCP
+      targetPort: {{.Values.additionalListeners.service.externalPortName}}
+      {{- if (not (empty .Values.service.nodePorts.external)) }}
+      nodePort: {{ .Values.service.nodePorts.external }}
+      {{- end }}
+    {{- end }}
     {{- if .Values.service.extraPorts }}
     {{- include "common.tplvalues.render" (dict "value" .Values.service.extraPorts "context" $) | nindent 4 }}
     {{- end }}

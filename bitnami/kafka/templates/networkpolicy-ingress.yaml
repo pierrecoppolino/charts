@@ -45,6 +45,11 @@ spec:
       from: {{- include "common.tplvalues.render" ( dict "value" .Values.networkPolicy.externalAccess.from "context" $ ) | nindent 8 }}
     {{- end }}
     {{- end }}
+    #Allow addditionnal listerner external
+    {{- if .Values.additionalListeners.enable }}
+    - ports:
+        - port: {{ .Values.additionalListeners.service.externalPort }}
+    {{- end }}
     {{- if .Values.metrics.kafka.enabled }}
     # Allow prometheus scrapes
     - ports:
