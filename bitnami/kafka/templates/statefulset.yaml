@@ -382,6 +382,10 @@ spec:
             - name: kafka-external
               containerPort: {{ .Values.containerPorts.external }}
             {{- end }}
+            {{- if .Values.additionalListeners.enabled }}
+            - name: {{.Values.additionalListeners.service.externalPortName}}
+              containerPort: {{ .Values.additionalListeners.service.externalPort }}
+            {{- end }}
           {{- if not .Values.diagnosticMode.enabled }}
           {{- if .Values.livenessProbe.enabled }}
           livenessProbe: {{- include "common.tplvalues.render" (dict "value" (omit .Values.livenessProbe "enabled") "context" $) | nindent 12 }}
