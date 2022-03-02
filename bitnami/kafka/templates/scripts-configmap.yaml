@@ -113,7 +113,7 @@ data:
     export KAFKA_CFG_ADVERTISED_LISTENERS={{ join "," .Values.advertisedListeners }}
     {{- else if .Values.additionalListeners.enable }}
     export EXTERNAL_PLAIN_ACCESS_PORT="$(<${SHARED_FILE_PLAIN})"
-    export EXTERNAL_PLAIN_ACCESS_HOST="${MY_POD_IP}"
+    export EXTERNAL_PLAIN_ACCESS_HOST="${HOST_IP}"
     export KAFKA_CFG_ADVERTISED_LISTENERS="INTERNAL://${MY_POD_NAME}.{{ $fullname }}-headless.{{ $releaseNamespace }}.svc.{{ $clusterDomain }}:{{ $interBrokerPort }},CLIENT://${MY_POD_NAME}.{{ $fullname }}-headless.{{ $releaseNamespace }}.svc.{{ $clusterDomain }}:{{ $clientPort }},EXTERNAL://${EXTERNAL_ACCESS_HOST}:${EXTERNAL_ACCESS_PORT},EXTERNAL-PLAIN://${EXTERNAL_PLAIN_ACCESS_HOST}:${EXTERNAL_PLAIN_ACCESS_PORT}"
     {{- else}}
     export KAFKA_CFG_ADVERTISED_LISTENERS="INTERNAL://${MY_POD_NAME}.{{ $fullname }}-headless.{{ $releaseNamespace }}.svc.{{ $clusterDomain }}:{{ $interBrokerPort }},CLIENT://${MY_POD_NAME}.{{ $fullname }}-headless.{{ $releaseNamespace }}.svc.{{ $clusterDomain }}:{{ $clientPort }},EXTERNAL://${EXTERNAL_ACCESS_HOST}:${EXTERNAL_ACCESS_PORT}"
