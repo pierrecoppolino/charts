@@ -1,0 +1,25 @@
+== Helm chart Apache Kafka
+Fork from bitnami (https://github.com/bitnami/charts)
+
+== Project
+The bitnami does not permit to have multi-externals listeners. In case of Kafka security migration,
+this possibility is useful to perform a sweet migration to allow unsecure and secure client connection
+
+Added Values::
+[source, text]
+.
+└── values.yaml
+      ├── additionalListeners:
+          ├── enable: true
+          ├── listener: "EXTERNAL-PLAIN"
+          ├── port: 9095
+          ├── protocol: "plaintext"
+          └── service:
+              ├── externalPort: 9095
+              ├── nodePorts: [31001,31002]
+              └── externalPortName: "kafka-ext-plain"
+      └── auth:
+          ├── tls:
+          ├── storeSecret: kafka-store-secret
+          ├── keystorePasswordFromSecret: keystore-password
+          ├── trustorePasswordFromSecret: trustore-password

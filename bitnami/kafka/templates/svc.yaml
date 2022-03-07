@@ -51,7 +51,7 @@ spec:
       nodePort: {{ .Values.service.nodePorts.external }}
       {{- end }}
     {{- end }}
-    {{- if and .Values.additionalListeners.enable (or (eq .Values.service.type "NodePort") (eq .Values.service.type "LoadBalancer")) }}
+    {{- if and .Values.additionalListeners.enabled (or (eq .Values.service.type "NodePort") (eq .Values.service.type "LoadBalancer")) }}
     - name: tcp-external-plain
       port: {{ .Values.additionalListeners.service.externalPort }}
       protocol: TCP

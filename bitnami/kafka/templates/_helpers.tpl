@@ -224,7 +224,7 @@ Usage:
 {{- else -}}
 {{- $listeners = printf "%s%v,%s%v" "INTERNAL://:" .Values.service.ports.internal "CLIENT://:" .Values.service.ports.client }}
 {{- end -}}
-{{- if .Values.additionalListeners.enable -}}
+{{- if .Values.additionalListeners.enabled -}}
 {{- $listeners = printf "%s,%s://:%v" $listeners .Values.additionalListeners.listener .Values.additionalListeners.port -}}
 {{- end -}}
 {{- printf "%s" $listeners -}}
@@ -249,7 +249,7 @@ Usage:
 {{- $protocolMap = printf "%s%s,%s%s" "INTERNAL:" $interBrokerProtocol "CLIENT:" $clientProtocol -}}
 {{- end -}}
 {{- end -}}
-{{- if .Values.additionalListeners.enable -}}
+{{- if .Values.additionalListeners.enabled -}}
 {{- $additionalListenerProtocol := include "kafka.listenerType" (dict "protocol" .Values.additionalListeners.protocol) -}}
 {{- $protocolMap = printf "%s,%s:%s" $protocolMap .Values.additionalListeners.listener $additionalListenerProtocol -}}
 {{- end -}}
@@ -410,7 +410,7 @@ kafka: auth.clientProtocol auth.externalClientProtocol auth.interBrokerProtocol
 {{- define "kafka.validateValues.nodePortListLength" -}}
 {{- $replicaCount := int .Values.replicaCount }}
 {{- $nodePortListLength := len .Values.externalAccess.service.nodePorts }}
-{{- if and .Values.externalAccess.enabled (not .Values.externalAccess.autoDiscovery.enabled) (not (eq $replicaCount $nodePortListLength )) (eq .Values.externalAccess.service.type "NodePort") -}}
+{{- if and (or .Values.externalAccess.enabled .Values.additionalListeners.enabled) (not .Values.externalAccess.autoDiscovery.enabled) (not (eq $replicaCount $nodePortListLength )) (eq .Values.externalAccess.service.type "NodePort") -}}
 kafka: .Values.externalAccess.service.nodePorts
     Number of replicas and nodePort array length must be the same. Currently: replicaCount = {{ $replicaCount }} and nodePorts = {{ $nodePortListLength }}
 {{- end -}}
@@ -426,7 +426,7 @@ kafka: externalAccess.service.type
 
 {{/* Validate values of Kafka - RBAC should be enabled when autoDiscovery is enabled */}}
 {{- define "kafka.validateValues.externalAccessAutoDiscoveryRBAC" -}}
-{{- if and .Values.externalAccess.enabled .Values.externalAccess.autoDiscovery.enabled (not .Values.rbac.create ) }}
+{{- if and (or .Values.externalAccess.enabled .Values.additionalListeners.enabled) .Values.externalAccess.autoDiscovery.enabled (not .Values.rbac.create ) }}
 kafka: rbac.create
     By specifying "externalAccess.enabled=true" and "externalAccess.autoDiscovery.enabled=true"
     an initContainer will be used to auto-detect the external IPs/ports by querying the
@@ -439,7 +439,7 @@ kafka: rbac.create
 {{- define "kafka.validateValues.externalAccessAutoDiscoveryIPsOrNames" -}}
 {{- $loadBalancerNameListLength := len .Values.externalAccess.service.loadBalancerNames -}}
 {{- $loadBalancerIPListLength := len .Values.externalAccess.service.loadBalancerIPs -}}
-{{- if and .Values.externalAccess.enabled (eq .Values.externalAccess.service.type "LoadBalancer") (not .Values.externalAccess.autoDiscovery.enabled) (eq $loadBalancerNameListLength 0) (eq $loadBalancerIPListLength 0) }}
+{{- if and (or .Values.externalAccess.enabled .Values.additionalListeners.enabled) (eq .Values.externalAccess.service.type "LoadBalancer") (not .Values.externalAccess.autoDiscovery.enabled) (eq $loadBalancerNameListLength 0) (eq $loadBalancerIPListLength 0) }}
 kafka: externalAccess.service.loadBalancerNames or externalAccess.service.loadBalancerIPs
     By specifying "externalAccess.enabled=true", "externalAccess.autoDiscovery.enabled=false" and
     "externalAccess.service.type=LoadBalancer" at least one of externalAccess.service.loadBalancerNames
@@ -452,7 +452,7 @@ kafka: externalAccess.service.loadBalancerNames or externalAccess.service.loadBa
 {{- define "kafka.validateValues.externalAccessServiceList" -}}
 {{- $replicaCount := int .context.Values.replicaCount }}
 {{- $listLength := len (get .context.Values.externalAccess.service .element) -}}
-{{- if and .context.Values.externalAccess.enabled (not .context.Values.externalAccess.autoDiscovery.enabled) (eq .context.Values.externalAccess.service.type "LoadBalancer") (gt $listLength 0) (not (eq $replicaCount $listLength)) }}
+{{- if and (or .context.Values.externalAccess.enabled .context.Values.additionalListeners.enabled) (not .context.Values.externalAccess.autoDiscovery.enabled) (eq .context.Values.externalAccess.service.type "LoadBalancer") (gt $listLength 0) (not (eq $replicaCount $listLength)) }}
 kafka: externalAccess.service.{{ .element }}
     Number of replicas and {{ .element }} array length must be the same. Currently: replicaCount = {{ $replicaCount }} and {{ .element }} = {{ $listLength }}
 {{- end -}}

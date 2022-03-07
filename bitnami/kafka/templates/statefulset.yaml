@@ -47,7 +47,7 @@ spec:
          {{- if (include "kafka.createTlsSecret" .) }}
         checksum/tls-secret: {{ include (print $.Template.BasePath "/tls-secrets.yaml") . | sha256sum }}
         {{- end }}
-        {{- if .Values.externalAccess.enabled }}
+        {{- if or .Values.externalAccess.enabled .Values.additionalListeners.enabled}}
         checksum/scripts: {{ include (print $.Template.BasePath "/scripts-configmap.yaml") . | sha256sum }}
         {{- end }}
         {{- if (include "kafka.metrics.jmx.createConfigmap" .) }}
@@ -93,7 +93,7 @@ spec:
       securityContext: {{- omit .Values.podSecurityContext "enabled" | toYaml | nindent 8 }}
       {{- end }}
       serviceAccountName: {{ include "kafka.serviceAccountName" . }}
-      {{- if or (and .Values.volumePermissions.enabled .Values.persistence.enabled) (and .Values.externalAccess.enabled .Values.externalAccess.autoDiscovery.enabled) .Values.initContainers }}
+      {{- if or (and .Values.volumePermissions.enabled .Values.persistence.enabled) (and .Values.externalAccess.enabled .Values.externalAccess.autoDiscovery.enabled) (and .Values.additionalListeners.enabled .Values.externalAccess.autoDiscovery.enabled)  .Values.initContainers }}
       initContainers:
         {{- if and .Values.volumePermissions.enabled .Values.persistence.enabled }}
         - name: volume-permissions
@@ -121,7 +121,7 @@ spec:
             - name: logs
               mountPath: {{ .Values.logPersistence.mountPath }}
         {{- end }}
-        {{- if and .Values.externalAccess.enabled .Values.externalAccess.autoDiscovery.enabled }}
+        {{- if and (or .Values.externalAccess.enabled .Values.additionalListeners.enabled) .Values.externalAccess.autoDiscovery.enabled }}
         - name: auto-discovery
           image: {{ include "kafka.externalAccess.autoDiscovery.image" . }}
           imagePullPolicy: {{ .Values.externalAccess.autoDiscovery.image.pullPolicy | quote }}
@@ -212,12 +212,12 @@ spec:
 {{/*              {{- else }}*/}}
 {{/*              value: "INTERNAL://:{{ $interBrokerPort }},CLIENT://:9092"*/}}
 {{/*              {{- end }}*/}}
-            {{- if .Values.externalAccess.enabled }}
+            {{- if (or .Values.externalAccess.enabled .Values.additionalListeners.enabled) }}
             {{- if .Values.externalAccess.autoDiscovery.enabled }}
             - name: SHARED_FILE
               value: "/shared/info.txt"
             {{- end }}
-            {{- if .Values.additionalListeners.enable }}
+            {{- if .Values.additionalListeners.enabled }}
             - name: SHARED_FILE_PLAIN
               value: "/shared/unsecure-info.txt"
             {{- end }}
@@ -433,7 +433,7 @@ spec:
             - name: scripts
               mountPath: /scripts/setup.sh
               subPath: setup.sh
-            {{- if and .Values.externalAccess.enabled .Values.externalAccess.autoDiscovery.enabled }}
+            {{- if and (or .Values.externalAccess.enabled .Values.additionalListeners.enabled) .Values.externalAccess.autoDiscovery.enabled }}
             - name: shared
               mountPath: /shared
             {{- end }}
@@ -511,7 +511,7 @@ spec:
           configMap:
             name: {{ include "common.names.fullname" . }}-scripts
             defaultMode: 0755
-        {{- if and .Values.externalAccess.enabled .Values.externalAccess.autoDiscovery.enabled }}
+        {{- if and (or .Values.externalAccess.enabled .Values.additionalListeners.enabled) .Values.externalAccess.autoDiscovery.enabled }}
         - name: shared
           emptyDir: {}
         {{- end }}

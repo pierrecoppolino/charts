@@ -1,4 +1,4 @@
-{{- if .Values.additionalListeners.enable }}
+{{- if .Values.additionalListeners.enabled }}
 {{- $fullName := include "common.names.fullname" . }}
 {{- $replicaCount := .Values.replicaCount | int }}
 {{- $root := . }}
@@ -41,7 +41,7 @@ spec:
   {{- end }}
   {{- end }}
   ports:
-    - name: tcp-kafka
+    - name: tcp-kafka-plain
       port: {{ $root.Values.additionalListeners.service.externalPort }}
       {{- if not (empty $root.Values.additionalListeners.service.nodePorts) }}
       nodePort: {{ index $root.Values.additionalListeners.service.nodePorts $i }}

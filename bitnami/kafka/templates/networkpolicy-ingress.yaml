@@ -46,7 +46,7 @@ spec:
     {{- end }}
     {{- end }}
     #Allow addditionnal listerner external
-    {{- if .Values.additionalListeners.enable }}
+    {{- if .Values.additionalListeners.enabled }}
     - ports:
         - port: {{ .Values.additionalListeners.service.externalPort }}
     {{- end }}

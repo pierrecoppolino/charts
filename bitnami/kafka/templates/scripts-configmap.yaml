@@ -111,13 +111,19 @@ data:
     # Configure Kafka advertised listeners
     {{- if .Values.advertisedListeners }}
     export KAFKA_CFG_ADVERTISED_LISTENERS={{ join "," .Values.advertisedListeners }}
-    {{- else if .Values.additionalListeners.enable }}
+    {{- else if .Values.additionalListeners.enabled }}
     export EXTERNAL_PLAIN_ACCESS_PORT="$(<${SHARED_FILE_PLAIN})"
     export EXTERNAL_PLAIN_ACCESS_HOST="${HOST_IP}"
-    export KAFKA_CFG_ADVERTISED_LISTENERS="INTERNAL://${MY_POD_NAME}.{{ $fullname }}-headless.{{ $releaseNamespace }}.svc.{{ $clusterDomain }}:{{ $interBrokerPort }},CLIENT://${MY_POD_NAME}.{{ $fullname }}-headless.{{ $releaseNamespace }}.svc.{{ $clusterDomain }}:{{ $clientPort }},EXTERNAL://${EXTERNAL_ACCESS_HOST}:${EXTERNAL_ACCESS_PORT},EXTERNAL-PLAIN://${EXTERNAL_PLAIN_ACCESS_HOST}:${EXTERNAL_PLAIN_ACCESS_PORT}"
+    export KAFKA_CFG_ADVERTISED_LISTENERS="INTERNAL://${MY_POD_NAME}.{{ $fullname }}-headless.{{ $releaseNamespace }}.svc.{{ $clusterDomain }}:{{ $interBrokerPort }},CLIENT://${MY_POD_NAME}.{{ $fullname }}-headless.{{ $releaseNamespace }}.svc.{{ $clusterDomain }}:{{ $clientPort }},EXTERNAL://${EXTERNAL_ACCESS_HOST}:${EXTERNAL_ACCESS_PORT},EXTERNALPLAIN://${EXTERNAL_PLAIN_ACCESS_HOST}:${EXTERNAL_PLAIN_ACCESS_PORT}"
     {{- else}}
     export KAFKA_CFG_ADVERTISED_LISTENERS="INTERNAL://${MY_POD_NAME}.{{ $fullname }}-headless.{{ $releaseNamespace }}.svc.{{ $clusterDomain }}:{{ $interBrokerPort }},CLIENT://${MY_POD_NAME}.{{ $fullname }}-headless.{{ $releaseNamespace }}.svc.{{ $clusterDomain }}:{{ $clientPort }},EXTERNAL://${EXTERNAL_ACCESS_HOST}:${EXTERNAL_ACCESS_PORT}"
     {{- end }}
+    {{- else if .Values.additionalListeners.enabled }}
+    export EXTERNAL_PLAIN_ACCESS_PORT="$(<${SHARED_FILE_PLAIN})"
+    export EXTERNAL_PLAIN_ACCESS_HOST="${HOST_IP}"
+    export KAFKA_CFG_ADVERTISED_LISTENERS="INTERNAL://${MY_POD_NAME}.{{ $fullname }}-headless.{{ $releaseNamespace }}.svc.{{ $clusterDomain }}:{{ $interBrokerPort }},CLIENT://${MY_POD_NAME}.{{ $fullname }}-headless.{{ $releaseNamespace }}.svc.{{ $clusterDomain }}:{{ $clientPort }},EXTERNALPLAIN://${EXTERNAL_PLAIN_ACCESS_HOST}:${EXTERNAL_PLAIN_ACCESS_PORT}"
+    echo "$EXTERNAL_PLAIN_ACCESS_HOST"
+    echo "$KAFKA_CFG_ADVERTISED_LISTENERS"
     {{- end }}
 
     {{- if (include "kafka.tlsEncryption" .) }}
