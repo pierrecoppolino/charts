@@ -68,7 +68,7 @@ diagnosticMode:
 image:
   registry: docker.io
   repository: bitnami/kafka
-  tag: 3.1.0-debian-10-r20
+  tag: 3.1.0-debian-10-r35
   ## Specify a imagePullPolicy
   ## Defaults to 'Always' if image tag is 'latest', else set to 'IfNotPresent'
   ## ref: https://kubernetes.io/docs/user-guide/images/#pre-pulling-images
@@ -84,7 +84,7 @@ image:
   pullSecrets: []
   ## Set to true if you would like to see extra information on logs
   ##
-  debug: false
+  debug: true
 ## @param config Configuration file for Kafka. Auto-generated based on other parameters when not specified
 ## Specify content for server.properties
 ## NOTE: This will override any KAFKA_CFG_ environment variables (including those set by the chart)
@@ -228,10 +228,10 @@ auth:
   ## @param auth.externalClientProtocol Authentication protocol for communications with external clients. Defaults to value of `auth.clientProtocol`. Allowed protocols: `plaintext`, `tls`, `mtls`, `sasl` and `sasl_tls`
   ## @param auth.interBrokerProtocol Authentication protocol for inter-broker communications. Allowed protocols: `plaintext`, `tls`, `mtls`, `sasl` and `sasl_tls`
   ##
-  clientProtocol: plaintext
+  clientProtocol: sasl
   # Note: empty by default for backwards compatibility reasons, find more information at
   # https://github.com/bitnami/charts/pull/8902/
-  externalClientProtocol: plaintext
+  externalClientProtocol: sasl_tls
   interBrokerProtocol: plaintext
   ## SASL configuration
   ##
@@ -259,13 +259,14 @@ auth:
       ##   - password1
       ##   - password2"
       ##
-      clientPasswords: []
+      clientPasswords: 
+        - pwd1
       ## @param auth.sasl.jaas.interBrokerUser Kafka inter broker communication user for SASL authentication
       ##
       interBrokerUser: admin
       ## @param auth.sasl.jaas.interBrokerPassword Kafka inter broker communication password for SASL authentication
       ##
-      interBrokerPassword: ""
+      interBrokerPassword: "adminpwd"
       ## @param auth.sasl.jaas.zookeeperUser Kafka ZooKeeper user for SASL authentication
       ##
       zookeeperUser: ""
@@ -598,19 +599,19 @@ updateStrategy:
   rollingUpdate: {}
 ## @param extraVolumes Optionally specify extra list of additional volumes for the Kafka pod(s)
 ## e.g:
-## extraVolumes:
-##   - name: kafka-jaas
-##     secret:
-##       secretName: kafka-jaas
-##
 extraVolumes: []
+# - name: kafka-jaas
+#   secret:
+#     secretName: kafs
+
+#extraVolumes: []
 ## @param extraVolumeMounts Optionally specify extra list of additional volumeMounts for the Kafka container(s)
-## extraVolumeMounts:
-##   - name: kafka-jaas
-##     mountPath: /bitnami/kafka/config/kafka_jaas.conf
-##     subPath: kafka_jaas.conf
-##
-extraVolumeMounts: []
+#extraVolumeMounts:
+# - name: kafka-jaas
+#   mountPath: /bitnami/kafka/config/kafka_jaas.conf
+#   subPath: kafka_jaas.conf
+
+#extraVolumeMounts: []
 ## @param sidecars Add additional sidecar containers to the Kafka pod(s)
 ## e.g:
 ## sidecars:
@@ -898,7 +899,7 @@ persistence:
 logPersistence:
   ## @param logPersistence.enabled Enable Kafka logs persistence using PVC, note that ZooKeeper persistence is unaffected
   ##
-  enabled: false
+  enabled: true
   ## @param logPersistence.existingClaim A manually managed Persistent Volume and Claim
   ## If defined, PVC must be created manually before volume will be bound
   ## The value is evaluated as a template
@@ -940,7 +941,7 @@ logPersistence:
 volumePermissions:
   ## @param volumePermissions.enabled Enable init container that changes the owner and group of the persistent volume
   ##
-  enabled: false
+  enabled: true
   ## @param volumePermissions.image.registry Init container volume-permissions image registry
   ## @param volumePermissions.image.repository Init container volume-permissions image repository
   ## @param volumePermissions.image.tag Init container volume-permissions image tag (immutable tags are recommended)
@@ -1172,12 +1173,12 @@ metrics:
     ##
     extraVolumes: []
     ## @param metrics.kafka.extraVolumeMounts Optionally specify extra list of additional volumeMounts for the Kafka exporter container(s)
-    ## extraVolumeMounts:
-    ##   - name: kafka-jaas
-    ##     mountPath: /bitnami/kafka/config/kafka_jaas.conf
-    ##     subPath: kafka_jaas.conf
+    extraVolumeMounts:
+     - name: kafka-jaas
+       mountPath: /bitnami/kafka/config/kafka_jaas.conf
+       subPath: kafka_jaas.conf
     ##
-    extraVolumeMounts: []
+#    extraVolumeMounts: []
     ## @param metrics.kafka.sidecars Add additional sidecar containers to the Kafka exporter pod(s)
     ## e.g:
     ## sidecars:

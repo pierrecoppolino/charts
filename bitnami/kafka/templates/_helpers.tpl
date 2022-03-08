@@ -132,7 +132,7 @@ Return true if authentication via SASL should be configured for client communica
 */}}
 {{- define "kafka.client.saslAuthentication" -}}
 {{- $saslProtocols := list "sasl" "sasl_tls" -}}
-{{- if has .Values.auth.clientProtocol $saslProtocols -}}
+{{- if or (has .Values.auth.clientProtocol $saslProtocols) (has .Values.auth.externalClientProtocol $saslProtocols) (has .Values.additionalListeners.protocol $saslProtocols)  -}}
     {{- true -}}
 {{- end -}}
 {{- end -}}
