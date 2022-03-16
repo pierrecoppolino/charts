@@ -358,7 +358,14 @@ additionalListeners:
   listener: "EXTERNALPLAIN"
   port: 9095
   protocol: "plaintext"
+  autoDiscovery:
+    enabled: true
   service:
+    # loadbalance or nodePort
+    type: "LoadBalancer"
+    loadBalancerIPs: [192.168.49.2]
+    loadBalancerNames: [toto.org]
+    loadBalancerSourceRanges: "" 
     #must be the same as additionalListeners.port
     externalPort: 9095
     nodePorts: [31001,31002]

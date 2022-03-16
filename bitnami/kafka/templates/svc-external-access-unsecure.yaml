@@ -31,13 +31,13 @@ metadata:
     {{- end }}
   {{- end }}
 spec:
-  type: {{ $root.Values.externalAccess.service.type }}
-  {{- if eq $root.Values.externalAccess.service.type "LoadBalancer" }}
-  {{- if and (not (empty $root.Values.externalAccess.service.loadBalancerIPs)) (eq (len $root.Values.externalAccess.service.loadBalancerIPs) $replicaCount) }}
-  loadBalancerIP: {{ index $root.Values.externalAccess.service.loadBalancerIPs $i }}
+  type: {{ $root.Values.additionalListeners.service.type }}
+  {{- if eq $root.Values.additionalListeners.service.type "LoadBalancer" }}
+  {{- if and (not (empty $root.Values.additionalListeners.service.loadBalancerIPs)) (eq (len $root.Values.additionalListeners.service.loadBalancerIPs) $replicaCount) }}
+  loadBalancerIP: {{ index $root.Values.additionalListeners.service.loadBalancerIPs $i }}
   {{- end }}
-  {{- if $root.Values.externalAccess.service.loadBalancerSourceRanges }}
-  loadBalancerSourceRanges: {{- toYaml $root.Values.externalAccess.service.loadBalancerSourceRanges | nindent 4 }}
+  {{- if $root.Values.additionalListeners.service.loadBalancerSourceRanges }}
+  loadBalancerSourceRanges: {{- toYaml $root.Values.additionalListeners.service.loadBalancerSourceRanges | nindent 4 }}
   {{- end }}
   {{- end }}
   ports:

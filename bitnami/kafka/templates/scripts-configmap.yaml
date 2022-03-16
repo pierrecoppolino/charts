@@ -25,7 +25,7 @@ data:
 
     SVC_NAME="${MY_POD_NAME}-external"
     SVC_NAME_EXTERNAL_PLAIN="${MY_POD_NAME}-external-plain"
-    {{- if eq .Values.externalAccess.service.type "LoadBalancer" }}
+    {{- if or  (eq .Values.externalAccess.service.type "LoadBalancer" ) (eq .Values.additionalListeners.service.type "LoadBalancer")}}
     # Auxiliary functions
     retry_while() {
         local -r cmd="${1:?cmd is missing}"
@@ -57,11 +57,20 @@ data:
         local service=${2:?service is missing}
         [[ -n "$(k8s_svc_lb_ip "$namespace" "$service")" ]]
     }
+    {{- if eq .Values.externalAccess.service.type "LoadBalancer" }}
     # Wait until LoadBalancer IP is ready
     retry_while "k8s_svc_lb_ip_ready {{ $releaseNamespace }} $SVC_NAME" || exit 1
     # Obtain LoadBalancer external IP
     k8s_svc_lb_ip "{{ $releaseNamespace }}" "$SVC_NAME" | tee "$SHARED_FILE"
-    {{- else if eq .Values.externalAccess.service.type "NodePort" }}
+    {{- end }}
+    {{- if eq .Values.additionalListeners.service.type "LoadBalancer"}}
+    # Wait until LoadBalancer IP is ready
+    retry_while "k8s_svc_lb_ip_ready {{ $releaseNamespace }} $SVC_NAME_EXTERNAL_PLAIN" || exit 1
+    # Obtain LoadBalancer external IP
+    k8s_svc_lb_ip "{{ $releaseNamespace }}" "$SVC_NAME_EXTERNAL_PLAIN" | tee "$SHARED_FILE_PLAIN"
+    {{- end}}
+
+    {{- else if or (eq .Values.externalAccess.service.type "NodePort") (eq .Values.additionalListeners.service.type "NodePort") }}
     k8s_svc_node_port() {
         local namespace=${1:?namespace is missing}
         local service=${2:?service is missing}
@@ -69,8 +78,13 @@ data:
         local node_port="$(kubectl get svc "$service" -n "$namespace" -o jsonpath="{.spec.ports[$index].nodePort}")"
         echo "$node_port"
     }
+    {{-  if eq .Values.externalAccess.service.type "NodePort" }}
     k8s_svc_node_port "{{ $releaseNamespace }}" "$SVC_NAME" | tee "$SHARED_FILE"
+    {{- end}}
+    {{-  if eq .Values.additionalListeners.service.type "NodePort" }}
     k8s_svc_node_port "{{ $releaseNamespace }}" "$SVC_NAME_EXTERNAL_PLAIN" | tee "$SHARED_FILE_PLAIN"
+    {{- end}}
+
     {{- end }}
     {{- end }}
   setup.sh: |-
@@ -91,12 +105,13 @@ data:
     export EXTERNAL_ACCESS_HOST=$(echo '{{ .Values.externalAccess.service.loadBalancerNames | default .Values.externalAccess.service.loadBalancerIPs }}' | tr -d '[]' | cut -d ' ' -f "$(($ID + 1))")
     {{- end }}
     export EXTERNAL_ACCESS_PORT={{ .Values.externalAccess.service.ports.external }}
+
     {{- else if eq .Values.externalAccess.service.type "NodePort" }}
     {{- if and .Values.externalAccess.service.usePodIPs .Values.externalAccess.autoDiscovery.enabled }}
     export EXTERNAL_ACCESS_HOST="${MY_POD_IP}"
     {{- else if or .Values.externalAccess.service.useHostIPs .Values.externalAccess.autoDiscovery.enabled }}
     export EXTERNAL_ACCESS_HOST="${HOST_IP}"
-    {{- else if .Values.externalAccess.service.domain }}
+    {{- else if    .Values.externalAccess.service.domain }}
     export EXTERNAL_ACCESS_HOST={{ .Values.externalAccess.service.domain }}
     {{- else }}
     export EXTERNAL_ACCESS_HOST=$(curl -s https://ipinfo.io/ip)
@@ -112,18 +127,23 @@ data:
     {{- if .Values.advertisedListeners }}
     export KAFKA_CFG_ADVERTISED_LISTENERS={{ join "," .Values.advertisedListeners }}
     {{- else if .Values.additionalListeners.enabled }}
+    {{- if eq .Values.additionalListeners.service.type "NodePort"}}
     export EXTERNAL_PLAIN_ACCESS_PORT="$(<${SHARED_FILE_PLAIN})"
     export EXTERNAL_PLAIN_ACCESS_HOST="${HOST_IP}"
+
+    {{- else if eq .Values.additionalListeners.service.type "LoadBalancer" }}
+    {{- if .Values.additionalListeners.autoDiscovery.enabled }}
+    export EXTERNAL_PLAIN_ACCESS_HOST="$(<${SHARED_FILE_PLAIN})"
+    {{- else }}
+    export EXTERNAL_PLAIN_ACCESS_HOST=$(echo '{{ .Values.additionalListeners.service.loadBalancerNames | default .Values.additionalListeners.service.loadBalancerIPs }}' | tr -d '[]' | cut -d ' ' -f "$(($ID + 1))")
+    {{- end }}
+    export EXTERNAL_PLAIN_ACCESS_PORT={{ .Values.additionalListeners.service.externalPort}}
+    {{- end}}
     export KAFKA_CFG_ADVERTISED_LISTENERS="INTERNAL://${MY_POD_NAME}.{{ $fullname }}-headless.{{ $releaseNamespace }}.svc.{{ $clusterDomain }}:{{ $interBrokerPort }},CLIENT://${MY_POD_NAME}.{{ $fullname }}-headless.{{ $releaseNamespace }}.svc.{{ $clusterDomain }}:{{ $clientPort }},EXTERNAL://${EXTERNAL_ACCESS_HOST}:${EXTERNAL_ACCESS_PORT},EXTERNALPLAIN://${EXTERNAL_PLAIN_ACCESS_HOST}:${EXTERNAL_PLAIN_ACCESS_PORT}"
     {{- else}}
     export KAFKA_CFG_ADVERTISED_LISTENERS="INTERNAL://${MY_POD_NAME}.{{ $fullname }}-headless.{{ $releaseNamespace }}.svc.{{ $clusterDomain }}:{{ $interBrokerPort }},CLIENT://${MY_POD_NAME}.{{ $fullname }}-headless.{{ $releaseNamespace }}.svc.{{ $clusterDomain }}:{{ $clientPort }},EXTERNAL://${EXTERNAL_ACCESS_HOST}:${EXTERNAL_ACCESS_PORT}"
     {{- end }}
-    {{- else if .Values.additionalListeners.enabled }}
-    export EXTERNAL_PLAIN_ACCESS_PORT="$(<${SHARED_FILE_PLAIN})"
-    export EXTERNAL_PLAIN_ACCESS_HOST="${HOST_IP}"
-    export KAFKA_CFG_ADVERTISED_LISTENERS="INTERNAL://${MY_POD_NAME}.{{ $fullname }}-headless.{{ $releaseNamespace }}.svc.{{ $clusterDomain }}:{{ $interBrokerPort }},CLIENT://${MY_POD_NAME}.{{ $fullname }}-headless.{{ $releaseNamespace }}.svc.{{ $clusterDomain }}:{{ $clientPort }},EXTERNALPLAIN://${EXTERNAL_PLAIN_ACCESS_HOST}:${EXTERNAL_PLAIN_ACCESS_PORT}"
-    echo "$EXTERNAL_PLAIN_ACCESS_HOST"
-    echo "$KAFKA_CFG_ADVERTISED_LISTENERS"
+
     {{- end }}
 
     {{- if (include "kafka.tlsEncryption" .) }}
