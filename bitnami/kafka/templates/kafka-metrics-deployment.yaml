@@ -94,11 +94,12 @@ spec:
             {{- end }}
             {{- if (include "kafka.client.saslAuthentication" .) }}
             - --sasl.enabled
-            - --sasl.username="$SASL_USERNAME"
-            - --sasl.password="${SASL_USER_PASSWORD%%,*}"
+            - --sasl.username=$(SASL_USERNAME)
+            - --sasl.password=$(SASL_USER_PASSWORD)
             - --sasl.mechanism={{ include "kafka.metrics.kafka.saslMechanism" . }}
             {{- end }}
             {{- if (include "kafka.client.tlsEncryption" .) }}
+            - --tls.insecure-skip-tls-verify
             - --tls.enabled
             {{- if .Values.metrics.kafka.certificatesSecret }}
             - --tls.key-file=/opt/bitnami/kafka-exporter/certs/{{ .Values.metrics.kafka.tlsKey }}

@@ -231,17 +231,17 @@ auth:
   clientProtocol: sasl
   # Note: empty by default for backwards compatibility reasons, find more information at
   # https://github.com/bitnami/charts/pull/8902/
-  externalClientProtocol: sasl_tls
-  interBrokerProtocol: plaintext
+  externalClientProtocol: sasl
+  interBrokerProtocol: sasl
   ## SASL configuration
   ##
   sasl:
     ## @param auth.sasl.mechanisms SASL mechanisms when either `auth.interBrokerProtocol`, `auth.clientProtocol` or `auth.externalClientProtocol` are `sasl`. Allowed types: `plain`, `scram-sha-256`, `scram-sha-512`
     ##
-    mechanisms: plain,scram-sha-256,scram-sha-512
+    mechanisms: plain, scram-sha-256,scram-sha-512
     ## @param auth.sasl.interBrokerMechanism SASL mechanism for inter broker communication.
     ##
-    interBrokerMechanism: plain
+    interBrokerMechanism: scram-sha-256
     ## JAAS configuration for SASL authentication.
     ##
     jaas:
@@ -259,8 +259,8 @@ auth:
       ##   - password1
       ##   - password2"
       ##
-      clientPasswords: 
-        - pwd1
+      clientPasswords:
+        - userPWD
       ## @param auth.sasl.jaas.interBrokerUser Kafka inter broker communication user for SASL authentication
       ##
       interBrokerUser: admin
@@ -362,13 +362,12 @@ additionalListeners:
     enabled: true
   service:
     # loadbalance or nodePort
-    type: "LoadBalancer"
+    type: "NodePort"
     loadBalancerIPs: [192.168.49.2]
     loadBalancerNames: [toto.org]
-    loadBalancerSourceRanges: "" 
+    loadBalancerSourceRanges: ""
     #must be the same as additionalListeners.port
-    externalPort: 9095
-    nodePorts: [31001,31002]
+    externalPort: 9085
     externalPortName: "kafka-ext-plain"
 
 ## @param listeners The address(es) the socket server listens on. Auto-calculated it's set to an empty array
@@ -791,13 +790,13 @@ externalAccess:
     ## - 10.10.10.0/24
     ##
     loadBalancerSourceRanges: []
-    ## @param externalAccess.service.nodePorts Array of node ports used for each Kafka broker. Length must be the same as replicaCount
+    ## @param externalAccess.service. Array of node ports used for each Kafka broker. Length must be the same as replicaCount
     ## e.g:
     ## nodePorts:
     ##   - 30001
     ##   - 30002
     ##
-    nodePorts: [30001,30002]
+    nodePorts: []
     ## @param externalAccess.service.useHostIPs Use service host IPs to configure Kafka external listener when service type is NodePort
     ##
     useHostIPs: true
@@ -1001,7 +1000,7 @@ serviceAccount:
   ## Can be set to false if pods using this serviceAccount do not need to use K8s API
   ##
   automountServiceAccountToken: true
-  ## @param serviceAccount.annotations Additional custom annotations for the ServiceAccount
+  ## @param serviceAccount.annotations Additicustom annotations for the ServiceAccount
   ##
   annotations: {}
 ## Role Based Access Control
@@ -1024,7 +1023,7 @@ metrics:
   kafka:
     ## @param metrics.kafka.enabled Whether or not to create a standalone Kafka exporter to expose Kafka metrics
     ##
-    enabled: false
+    enabled: true
     ## Bitnami Kafka exporter image
     ## ref: https://hub.docker.com/r/bitnami/kafka-exporter/tags/
     ## @param metrics.kafka.image.registry Kafka exporter image registry
@@ -1178,12 +1177,16 @@ metrics:
     ##     secret:
     ##       secretName: kafka-jaas
     ##
-    extraVolumes: []
+    ##extraVolumes: []
+    extraVolumes:
+       - name: kafka-jaas
+         secret:
+           secretName: kafka-jaas
     ## @param metrics.kafka.extraVolumeMounts Optionally specify extra list of additional volumeMounts for the Kafka exporter container(s)
-    extraVolumeMounts:
-     - name: kafka-jaas
-       mountPath: /bitnami/kafka/config/kafka_jaas.conf
-       subPath: kafka_jaas.conf
+#    extraVolumeMounts:
+#     - name: kafka-jaas
+#       mountPath: /bitnami/kafka/config/kafka_jaas.conf
+#       subPath: kafka_jaas.conf
     ##
 #    extraVolumeMounts: []
     ## @param metrics.kafka.sidecars Add additional sidecar containers to the Kafka exporter pod(s)

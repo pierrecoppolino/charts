@@ -78,13 +78,13 @@ admin:
   user: "admin"
   ## @param admin.password Admin password. If a password is not provided a random password will be generated
   ##
-  password: ""
+  password: "admin"
   ## @param admin.existingSecret Name of the existing secret containing admin password
   ##
   existingSecret: ""
   ## @param admin.existingSecretPasswordKey Password key on the existing secret
   ##
-  existingSecretPasswordKey: password
+  existingSecretPasswordKey: ""
 ## SMTP configuration
 ##
 smtp:
@@ -264,7 +264,7 @@ grafana:
     ## values:
     ##   - e2e-az1
     ##   - e2e-az2
-    ##
+    ##F
     values: []
   ## @param grafana.affinity Affinity for pod assignment
   ## Ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
@@ -551,7 +551,7 @@ service:
 ingress:
   ## @param ingress.enabled Set to true to enable ingress record generation
   ##
-  enabled: false
+  enabled: true
   ## DEPRECATED: Use ingress.annotations instead of ingress.certManager
   ## certManager: false
   ##
@@ -564,7 +564,7 @@ ingress:
   apiVersion: ""
   ## @param ingress.hostname When the ingress is enabled, a host pointing to this will be created
   ##
-  hostname: grafana.local
+  hostname: my.grafana.info
   ## @param ingress.path Default path for the ingress resource
   ## The Path to Grafana. You may need to set this to '/*' in order to use this with ALB ingress controllers.
   ##
@@ -638,7 +638,7 @@ ingress:
 metrics:
   ## @param metrics.enabled Enable the export of Prometheus metrics
   ##
-  enabled: false
+  enabled: true
   ## Prometheus Operator ServiceMonitor configuration
   ## @param metrics.service.annotations [object] Annotations for Prometheus metrics service
   ##
@@ -650,7 +650,7 @@ metrics:
   serviceMonitor:
     ## @param metrics.serviceMonitor.enabled if `true`, creates a Prometheus Operator ServiceMonitor (also requires `metrics.enabled` to be `true`)
     ##
-    enabled: false
+    enabled: true
     ## @param metrics.serviceMonitor.namespace Namespace in which Prometheus is running
     ##
     namespace: ""
