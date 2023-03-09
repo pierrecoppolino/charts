@@ -502,6 +502,8 @@ resources:
 podSecurityContext:
   enabled: true
   fsGroup: 1001
+  runAsUser: 1001
+  runAsGroup: 1001
 ## Kafka containers' Security Context
 ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
 ## @param containerSecurityContext.enabled Enable Kafka containers' Security Context
@@ -1098,6 +1100,8 @@ metrics:
     podSecurityContext:
       enabled: true
       fsGroup: 1001
+      runAsUser: 1001
+      runAsGroup: 1001
     ## Kafka exporter containers' Security Context
     ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
     ## @param metrics.kafka.containerSecurityContext.enabled Enable Kafka exporter containers' Security Context
